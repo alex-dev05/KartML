@@ -6,33 +6,43 @@ app.config["DEBUG"] = True
 
 class kartAgent(object):
     id = 0
-    file_id = 0
+    fileId = 0
     time = 0.0000
-    x_pos = 0.0000
-    y_pos = 0.0000
-    z_pos = 0.0000
-    left_side = False
-    left_forward = False
-    central_forward = False
-    right_forward = False
-    right_side = False
+    xPos = 0.0000
+    yPos = 0.0000
+    zPos = 0.0000
+    leftSide = False
+    leftForward = False
+    centralForward = False
+    rightForward = False
+    rightSide = False
+    leftSideDistance = 5.00
+    leftForwardDistance = 5.00
+    centralForwardDistance = 5.00
+    rightForwardDistance = 5.00
+    rightSideDistance = 5.00
     zone = "zone 1"
-    moving_forward = True
+    movingForward = True
 
 kart = [
     {'id':kartAgent.id,
-     'file_id':kartAgent.file_id,
+     'fileId':kartAgent.fileId,
      'time':kartAgent.time,
-     'x_pos':kartAgent.x_pos,
-     'y_pos':kartAgent.y_pos,
-     'z_pos':kartAgent.z_pos,
-     'left_side':kartAgent.left_side,
-     'left_forward':kartAgent.left_forward,
-     'central_forward':kartAgent.central_forward,
-     'right_forward':kartAgent.right_forward,
-     'right_side':kartAgent.right_side,
+     'xPos':kartAgent.xPos,
+     'yPos':kartAgent.yPos,
+     'zPos':kartAgent.zPos,
+     'leftSide':kartAgent.leftSide,
+     'leftForward':kartAgent.leftForward,
+     'centralForward':kartAgent.centralForward,
+     'rightForward':kartAgent.rightForward,
+     'rightSide':kartAgent.rightSide,
+     'leftSideDistance':kartAgent.leftSideDistance,
+     'leftForwardDistance':kartAgent.leftForwardDistance,
+     'centralForwardDistance':kartAgent.centralForwardDistance,
+     'rightForwardDistance':kartAgent.rightForwardDistance,
+     'rightSideDistance':kartAgent.rightSideDistance,
      'zone':kartAgent.zone,
-     'moving_forward':kartAgent.moving_forward
+     'movingForward':kartAgent.movingForward
     }
 ]
 
@@ -52,33 +62,43 @@ def create_person():
     # POST request
         body = request.get_json() # get the request body content
         if body is None:
-            return "The request body is null", 400
+            return "The request body is null", 404
         if 'id' not in body:
-            return 'You need to specify the id',400
-        if 'file_id' not in body:
-            return 'You need to specify the file_id', 400
+            return 'You need to specify the id',404
+        if 'fileId' not in body:
+            return 'You need to specify the fileId', 404
         if 'time' not in body:
-            return 'You need to specify the time', 400
-        if 'x_pos' not in body:
-            return 'You need to specify the x_pos', 400
-        if 'y_pos' not in body:
-            return 'You need to specify the y_pos', 400
-        if 'z_pos' not in body:
-            return 'You need to specify the z_pos', 400
-        if 'left_side' not in body:
-            return 'You need to specify the left_side', 400
-        if 'left_forward' not in body:
-            return 'You need to specify the left_forward', 400
-        if 'central_forward' not in body:
-            return 'You need to specify the central_forward', 400
-        if 'right_side' not in body:
-            return 'You need to specify the right_side', 400
-        if 'right_forward' not in body:
-            return 'You need to specify the right_forward', 400
+            return 'You need to specify the time', 404
+        if 'xPos' not in body:
+            return 'You need to specify the xPos', 404
+        if 'yPos' not in body:
+            return 'You need to specify the yPos', 404
+        if 'zPos' not in body:
+            return 'You need to specify the zPos', 404
+        if 'leftSide' not in body:
+            return 'You need to specify the leftSide', 404
+        if 'leftForward' not in body:
+            return 'You need to specify the leftForward', 404
+        if 'centralForward' not in body:
+            return 'You need to specify the centralForward', 404
+        if 'rightForward' not in body:
+            return 'You need to specify the rightForward', 404
+        if 'rightSide' not in body:
+            return 'You need to specify the rightSide', 404
+        if 'leftSideDistance' not in body:
+            return 'You need to specify the leftSideDistance', 404
+        if 'leftForwardDistance' not in body:
+            return 'You need to specify the leftForwardDistance', 404
+        if 'centralForwardDistance' not in body:
+            return 'You need to specify the centralForwardDistance', 404
+        if 'rightForwardDistance' not in body:
+            return 'You need to specify the rightForwardDistance', 404
+        if 'rightSideDistance' not in body:
+            return 'You need to specify the rightSideDistance', 404
         if 'zone' not in body:
-            return 'You need to specify the zone', 400
-        if 'moving_forward' not in body:
-            return 'You need to specify the moving_forward', 400
+            return 'You need to specify the zone', 404
+        if 'movingForward' not in body:
+            return 'You need to specify the movingForward', 404
         return "ok", 200
 
 app.run()
