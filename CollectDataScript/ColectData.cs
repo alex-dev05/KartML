@@ -7,6 +7,7 @@ using System;
 using System.Net.Http;
 using System.Linq;
 using Unity.Plastic.Newtonsoft.Json;
+using KartGame.KartSystems;
 
 public class ColectData : MonoBehaviour
 {
@@ -100,24 +101,29 @@ public class ColectData : MonoBehaviour
 
         // flush all rows once time.
         //File.AppendAllText(@"C:/Poli/Dizertatie/exports/" + file_name, sb.ToString(), Encoding.UTF8);
+        // PostAPI();
 
-       // PostAPI();
-        print("fileId " + fileId 
-            +" xPos" + x.ToString() 
-            + "yPos:" + y.ToString() 
-            + "zPos: " + z.ToString() 
-            + "leftSide: " + wallDetected[0] 
-            + "leftForward: " + wallDetected[1]
-            + "centralForward: " + wallDetected[2]
-            + "rightForward: " + wallDetected[3]
-            + "rightSide: " + wallDetected[4]
-            + "leftSideDistance: " + wallDetected[0]
-            + "leftForwardDistance: " + wallDetected[1]
-            + "centralForwardDistance: " + wallDetected[2]
-            + "rightForwardDistance: " + wallDetected[3]
-            + "rightSideDistance: " + wallDetected[4]
-            + "zone: "+ currZone
-            + "movingForward "+ MovingForward);
+        x = Input.GetAxis("Horizontal");
+        y = Input.GetAxis("Vertical");
+        print(x + " " + y);
+        print(" fileId " + fileId 
+            + " xPos" + x.ToString() 
+            + " yPos:" + y.ToString() 
+            + " zPos: " + z.ToString() 
+            + " leftSide: " + wallDetected[0] 
+            + " leftForward: " + wallDetected[1]
+            + " centralForward: " + wallDetected[2]
+            + " rightForward: " + wallDetected[3]
+            + " rightSide: " + wallDetected[4]
+            + " leftSideDistance: " + wallDetected[0]
+            + " leftForwardDistance: " + wallDetected[1]
+            + " centralForwardDistance: " + wallDetected[2]
+            + " rightForwardDistance: " + wallDetected[3]
+            + " rightSideDistance: " + wallDetected[4]
+            + " zone: "+ currZone
+            + " movingForward "+ MovingForward 
+            + " x mov" + x 
+            + " y mov" + y);
 
     }
 
@@ -369,4 +375,18 @@ public class ColectData : MonoBehaviour
        
     }
 
+    public void MoveCar()
+    {
+        
+    }
+
+    public static float GetX()
+    {
+        return 1;
+    }
+
+    public static float GetY()
+    {
+        return 1;
+    }
 }
