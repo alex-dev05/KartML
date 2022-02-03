@@ -1,5 +1,14 @@
+from operator import truediv
+from types import SimpleNamespace
 from flask import Flask, jsonify, request
 from flask_restful import Resource, Api
+# importam librarile pentru modelul de ML
+from sklearn.tree import DecisionTreeClassifier # Import Decision Tree Classifier
+from sklearn.model_selection import train_test_split # Import train_test_split function
+from sklearn import metrics #Import scikit-learn metrics module for accuracy calculation
+import json
+import pandas as pd
+import numpy as np
 
 app = Flask(__name__)
 app.config["DEBUG"] = True
@@ -21,8 +30,13 @@ class kartAgent(object):
     centralForwardDistance = 5.00
     rightForwardDistance = 5.00
     rightSideDistance = 5.00
-    zone = "zone 1"
+    zone = 1
     movingForward = True
+    moveForwardInput = True
+    moveBackwardsInput = False
+    moveLeftInput = True
+    moveRightInput = False
+    state = 15
 
 kart = [
     {'id':kartAgent.id,
@@ -42,9 +56,79 @@ kart = [
      'rightForwardDistance':kartAgent.rightForwardDistance,
      'rightSideDistance':kartAgent.rightSideDistance,
      'zone':kartAgent.zone,
-     'movingForward':kartAgent.movingForward
+     'movingForward':kartAgent.movingForward,
+     'moveForwardInput':kartAgent.moveForwardInput,
+     'moveBackwardsInput':kartAgent.moveBackwardsInput,
+     'moveLeftInput':kartAgent.moveLeftInput,
+     'moveRigthInput':kartAgent.moveRightInput,
+     'state':kartAgent.state
     }
 ]
+
+#import merged cvs
+#citim datele din fisier
+data=pd.read_csv(r"C:\Poli\Dizertatie\Repo_Github\KartML\Export_Csv\merged2.csv")
+
+#clean data
+#data = data[data['State'] != "0"]
+data["xPos"] = pd.to_numeric(data["xPos"], downcast="float")
+data = data[data['zone'].notna()]
+
+# selectam coloana pe care vrem sa o considera tinta/target. In cazul de fata o sa vrem sa vedem care rezervare sunt anulate
+y = data.state
+
+#selectam features-urile. O sa fie toate coloanele mai putin coloana is_canceled
+x=data
+x.drop('fileId',axis=1,inplace = True)
+x.drop('moveForwardInput', axis=1, inplace=True)
+x.drop('moveBackwardsInput', axis=1, inplace=True)
+x.drop('moveLeftInput', axis=1, inplace=True)
+x.drop('moveRightInput', axis=1, inplace=True)
+x.drop('state',axis=1,inplace=True)
+
+
+#impartim setul de datele in set de antrenare si set de testare
+x_train, x_test, y_train, y_test = train_test_split(x.values, y.values, test_size=0.3, random_state=10) # 70% training and 30% tes
+
+# construim modelul - Decision Tree Clasifier
+# Create Decision Tree classifer object
+clf = DecisionTreeClassifier()
+
+# Train Decision Tree Classifer
+clf = clf.fit(x_train,y_train)
+
+#Predict the response for test dataset
+y_pred = clf.predict(x_test)
+
+#Evaluam Modelul
+# Model Accuracy, how often is the classifier correct?
+print("Accuracy:",metrics.accuracy_score(y_test, y_pred))
+
+def returnActions(object):
+    kartLoc = kartAgent()
+    kartLoc.time = object['time']
+    kartLoc.xPos = object['xPos']
+    kartLoc.yPos = object['yPos']
+    kartLoc.zPos = object['zPos']
+    kartLoc.leftSide = object['leftSide']
+    kartLoc.leftForward = object['leftForward']
+    kartLoc.centralForward = object['centralForward']
+    kartLoc.rightForward = object['rightForward']
+    kartLoc.rightSide = object['rightSide']
+    kartLoc.leftSideDistance = object['leftSideDistance']
+    kartLoc.leftForwardDistance = object['leftForwardDistance']
+    kartLoc.centralForwardDistance = object['centralForwardDistance']
+    kartLoc.rightForwardDistance = object['rightForwardDistance']
+    kartLoc.rightSideDistance = object['rightSideDistance']
+    kartLoc.zone = object['zone']
+    kartLoc.movingForward = object['movingForward']
+
+    newModel = [[kartLoc.time,kartLoc.xPos,kartLoc.yPos,kartLoc.zPos,kartLoc.leftSide,kartLoc.leftForward,kartLoc.centralForward,kartLoc.rightForward,kartLoc.rightSide,kartLoc.leftSideDistance,kartLoc.leftForwardDistance,kartLoc.centralForwardDistance,kartLoc.rightForwardDistance,kartLoc.rightSideDistance,kartLoc.zone,kartLoc.movingForward]]
+    prediction = clf.predict(newModel)
+    kartLoc.state = str(prediction[0])
+    print(object)
+    return json.dumps(kartLoc.__dict__)
+
 
 @app.route('/', methods=['GET'])
 def home():
@@ -99,6 +183,9 @@ def create_person():
             return 'You need to specify the zone', 404
         if 'movingForward' not in body:
             return 'You need to specify the movingForward', 404
-        return "ok", 200
+        if 'state' not in body:
+            return 'You need to specify the state', 404
+        return returnActions(body)
+        #return "ok", 200
 
 app.run()

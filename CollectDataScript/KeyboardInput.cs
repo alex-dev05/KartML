@@ -8,7 +8,6 @@ namespace KartGame.KartSystems {
         public string Vertical = "Vertical";
 
         public override Vector2 GenerateInput() {
-            //float x = new float();
             
             var x_from_api = ColectData.GetX();
             var y_from_api = ColectData.GetY();
