@@ -40,7 +40,7 @@ Vertical ia valori intre -1 si 1.
 0 -> down arrow/up arrow neapasate
 1 - up arrrow apasat
 
-Vertical ia valori intre -1 si 1.
+Horizontal ia valori intre -1 si 1.
 -1 -> left arrow apasat
 0 -> left arrow/ right arrow neapasate
 1 - right arrrow apasat
