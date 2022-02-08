@@ -31,6 +31,14 @@ val = 15 -> up arrow = nu e apasat, down arrow = nu e apasat, left arrow = nu e 
 
 Flask API + Modificare Unity ca sa fie controlat prin cod
 
+
+Resurse
+https://machinelearningmastery.com/simple-genetic-algorithm-from-scratch-in-python/
+https://github.com/ahmedfgad/TorchGA
+https://pygad.readthedocs.io/en/latest/
+https://blog.paperspace.com/train-keras-models-using-genetic-algorithm-with-pygad/
+
+
 In momentul in care incepe jocul in modul "NPC", la fiecare frame cand se executa functia de update, se face un call la functia din Python prin intermediul API-ului de tip FLask printr-un request de tip post, care contine datele colectate din mediul unity, si returneaza ca si response valoarea de mai sus.
 Valoarea respectiva este interpretata si se da comanda catre unity prin intermediul Vertical si Horizontal.
 
