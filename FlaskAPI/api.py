@@ -67,7 +67,7 @@ kart = [
 
 #import merged cvs
 #citim datele din fisier
-data=pd.read_csv(r"C:\Poli\Dizertatie\Repo_Github\KartML\Export_Csv\merged2.csv")
+data=pd.read_csv(r"C:\Poli\Dizertatie\Repo_Github\KartML\Export_Csv\merged.csv")
 
 #clean data
 #data = data[data['State'] != "0"]
@@ -75,7 +75,7 @@ data["xPos"] = pd.to_numeric(data["xPos"], downcast="float")
 data = data[data['zone'].notna()]
 
 # selectam coloana pe care vrem sa o considera tinta/target. In cazul de fata o sa vrem sa vedem care rezervare sunt anulate
-y = data.state
+y = data.State
 
 #selectam features-urile. O sa fie toate coloanele mai putin coloana is_canceled
 x=data
@@ -84,7 +84,7 @@ x.drop('moveForwardInput', axis=1, inplace=True)
 x.drop('moveBackwardsInput', axis=1, inplace=True)
 x.drop('moveLeftInput', axis=1, inplace=True)
 x.drop('moveRightInput', axis=1, inplace=True)
-x.drop('state',axis=1,inplace=True)
+x.drop('State',axis=1,inplace=True)
 
 
 #impartim setul de datele in set de antrenare si set de testare
