@@ -1,4 +1,6 @@
-﻿using System.Collections;
+﻿#define ML
+
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using System.IO;
@@ -72,18 +74,22 @@ public class ColectData : MonoBehaviour
     // Start is called before the first frame update
     private void Start()
     {
-        try
+#if ML
+ try
         {
             using (System.IO.StreamWriter file = new System.IO.StreamWriter(@"C:\Poli\Dizertatie\Repo_Github\KartML\Export_Csv\file" + fileName, true))
             {
-                //file.WriteLine("fileId,time,xPos,yPos,zPos,leftSide,leftForward,centralForward,rightForward,rightSide,leftSideDistance,leftForwardDistance," +
-                  //  "centralForwardDistance,rightForwardDistance,rightSideDistance,zone,movingForward,moveForwardInput,moveBackwardsInput,moveLeftInput,moveRightInput,state");
+                file.WriteLine("fileId,time,xPos,yPos,zPos,leftSide,leftForward,centralForward,rightForward,rightSide,leftSideDistance,leftForwardDistance," +
+                    "centralForwardDistance,rightForwardDistance,rightSideDistance,zone,movingForward,moveForwardInput,moveBackwardsInput,moveLeftInput,moveRightInput,state");
             }
         }
         catch (Exception ex)
         {
             throw new ApplicationException("Error ", ex);
         }
+#else
+#endif
+
     }
 
 
@@ -138,16 +144,21 @@ public class ColectData : MonoBehaviour
         // left angle sensor distance, left forward sensor distance, central forward sensor distance, rigth forward sensor distance, right angle sensor distance, 
         //zone, moving forward
 
-        
-        sb.AppendFormat("{0},{1},{2},{3},{4},{5},{6},{7},{8},{9},{10},{11},{12},{13},{14},{15},{16},{17},{18},{19},{20},{21}\n",fileId,Time.time.ToString(), x.ToString(),
+#if ML
+    PostAPI();
+#else
+        sb.AppendFormat("{0},{1},{2},{3},{4},{5},{6},{7},{8},{9},{10},{11},{12},{13},{14},{15},{16},{17},{18},{19},{20},{21}\n", fileId, Time.time.ToString(), x.ToString(),
             y.ToString(), z.ToString(),
-            wallDetected[0].ToString(),wallDetected[1].ToString(), wallDetected[2].ToString(),wallDetected[3].ToString(), wallDetected[4].ToString(),
+            wallDetected[0].ToString(), wallDetected[1].ToString(), wallDetected[2].ToString(), wallDetected[3].ToString(), wallDetected[4].ToString(),
             distanceToWall[0].ToString(), distanceToWall[1].ToString(), distanceToWall[2].ToString(), distanceToWall[3].ToString(), distanceToWall[4].ToString(),
-            currZone,MovingForward,MoveForwardInput.ToString(),MoveBackwardsInput.ToString(),MoveLeftInput.ToString(),MoveRightInput.ToString(),state.ToString(), Environment.NewLine);
+            currZone, MovingForward, MoveForwardInput.ToString(), MoveBackwardsInput.ToString(), MoveLeftInput.ToString(), MoveRightInput.ToString(), state.ToString(), Environment.NewLine);
 
         // flush all rows once time.
         File.AppendAllText(@"C:\Poli\Dizertatie\Repo_Github\KartML\Export_Csv\file" + fileName, sb.ToString(), Encoding.UTF8);
-        PostAPI();
+
+#endif
+
+        //
         /*
         print(" fileId " + fileId 
             + " xPos" + x.ToString() 

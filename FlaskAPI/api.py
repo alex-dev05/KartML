@@ -4,6 +4,7 @@ from flask import Flask, jsonify, request
 from flask_restful import Resource, Api
 # importam librarile pentru modelul de ML
 from sklearn.tree import DecisionTreeClassifier # Import Decision Tree Classifier
+from sklearn.ensemble import RandomForestClassifier #Inportam Random Forest
 from sklearn.model_selection import train_test_split # Import train_test_split function
 from sklearn import metrics #Import scikit-learn metrics module for accuracy calculation
 import json
@@ -67,7 +68,7 @@ kart = [
 
 #import merged cvs
 #citim datele din fisier
-data=pd.read_csv(r"C:\Poli\Dizertatie\Repo_Github\KartML\Export_Csv\merged.csv")
+data=pd.read_csv(r"C:\Poli\Dizertatie\Repo_Github\KartML\Export_Csv\merged_final.csv")
 
 #clean data
 #data = data[data['State'] != "0"]
@@ -75,7 +76,7 @@ data["xPos"] = pd.to_numeric(data["xPos"], downcast="float")
 data = data[data['zone'].notna()]
 
 # selectam coloana pe care vrem sa o considera tinta/target. In cazul de fata o sa vrem sa vedem care rezervare sunt anulate
-y = data.State
+y = data.state
 
 #selectam features-urile. O sa fie toate coloanele mai putin coloana is_canceled
 x=data
@@ -84,7 +85,7 @@ x.drop('moveForwardInput', axis=1, inplace=True)
 x.drop('moveBackwardsInput', axis=1, inplace=True)
 x.drop('moveLeftInput', axis=1, inplace=True)
 x.drop('moveRightInput', axis=1, inplace=True)
-x.drop('State',axis=1,inplace=True)
+x.drop('state',axis=1,inplace=True)
 
 
 #impartim setul de datele in set de antrenare si set de testare
@@ -92,18 +93,20 @@ x_train, x_test, y_train, y_test = train_test_split(x.values, y.values, test_siz
 
 # construim modelul - Decision Tree Clasifier
 # Create Decision Tree classifer object
-clf = DecisionTreeClassifier()
+dtc_ML = DecisionTreeClassifier()
+rf_ML = RandomForestClassifier()
 
 # Train Decision Tree Classifer
-clf = clf.fit(x_train,y_train)
+dtc_ML = dtc_ML.fit(x_train,y_train)
+rf_ML = rf_ML.fit(x_train,y_train)
 
 #Predict the response for test dataset
-y_pred = clf.predict(x_test)
-
+y_pred_dtc = dtc_ML.predict(x_test)
+y_pred_rf = rf_ML.predict(x_test)
 #Evaluam Modelul
 # Model Accuracy, how often is the classifier correct?
-print("Accuracy:",metrics.accuracy_score(y_test, y_pred))
-
+print("Accuracy Decision Tree:",metrics.accuracy_score(y_test, y_pred_dtc))
+print("Accuracy Random Forest:",metrics.accuracy_score(y_test, y_pred_rf))
 def returnActions(object):
     kartLoc = kartAgent()
     kartLoc.time = object['time']
@@ -124,7 +127,7 @@ def returnActions(object):
     kartLoc.movingForward = object['movingForward']
 
     newModel = [[kartLoc.time,kartLoc.xPos,kartLoc.yPos,kartLoc.zPos,kartLoc.leftSide,kartLoc.leftForward,kartLoc.centralForward,kartLoc.rightForward,kartLoc.rightSide,kartLoc.leftSideDistance,kartLoc.leftForwardDistance,kartLoc.centralForwardDistance,kartLoc.rightForwardDistance,kartLoc.rightSideDistance,kartLoc.zone,kartLoc.movingForward]]
-    prediction = clf.predict(newModel)
+    prediction = rf_ML.predict(newModel)
     kartLoc.state = str(prediction[0])
     print(object)
     return json.dumps(kartLoc.__dict__)

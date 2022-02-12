@@ -1,4 +1,5 @@
-﻿using UnityEngine;
+﻿#define ML
+using UnityEngine;
 
 namespace KartGame.KartSystems {
 
@@ -12,10 +13,15 @@ namespace KartGame.KartSystems {
             var x_from_api = ColectData.GetX();
             var y_from_api = ColectData.GetY();
             return new Vector2 {
-                //x = Input.GetAxis(Horizontal),
+#if (ML)
                 x = x_from_api,
-                //y = Input.GetAxis(Vertical)
                 y = y_from_api
+#else
+                x = Input.GetAxis(Horizontal),
+                y = Input.GetAxis(Vertical)
+#endif
+
+
             };
         }
     }
