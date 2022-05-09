@@ -1,3 +1,5 @@
+from distutils.fancy_getopt import fancy_getopt
+from importlib.resources import path
 from operator import truediv
 from types import SimpleNamespace
 from flask import Flask, jsonify, request
@@ -11,8 +13,18 @@ import json
 import pandas as pd
 import numpy as np
 
+# for automatisation
+from pywinauto.application import Application 
+import pywinauto
+from pywinauto.keyboard import send_keys, KeySequenceError
+import win32gui
+import time
+import os
+
+
 app = Flask(__name__)
 app.config["DEBUG"] = True
+
 
 class kartAgent(object):
     id = 0
@@ -65,6 +77,11 @@ kart = [
      'state':kartAgent.state
     }
 ]
+
+# game location
+game_location = "C:\Poli\Dizertatie\Repo_Github\KartML\Export\ControlledByHuman\MachineLearning_Karts.exe"
+
+
 
 #import merged cvs
 #citim datele din fisier
@@ -190,5 +207,24 @@ def create_person():
             return 'You need to specify the state', 404
         return returnActions(body)
         #return "ok", 200
+
+# A route to start the game
+@app.route('/api/start-game', methods=['GET'])
+def start_game():
+    # start game
+    os.startfile(game_location)
+    return jsonify("OK")
+
+# A route to skip the menu
+@app.route('/api/skip-menu', methods=['GET'])
+def skip_menu():
+    hwnd = win32gui.FindWindowEx(0,0,0, "MachineLearning_Karts")
+    win32gui.SetForegroundWindow(hwnd)
+    
+    #time.sleep(5)
+    send_keys("{SPACE}")
+    #time.sleep(5)
+    send_keys("{SPACE}")
+    return jsonify("OK")
 
 app.run()
