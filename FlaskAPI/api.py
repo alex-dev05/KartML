@@ -14,10 +14,8 @@ import pandas as pd
 import numpy as np
 
 # for automatisation
-from pywinauto.application import Application 
-import pywinauto
+from pywinauto.application import Application
 from pywinauto.keyboard import send_keys, KeySequenceError
-import win32gui
 import time
 import os
 
@@ -212,19 +210,19 @@ def create_person():
 @app.route('/api/start-game', methods=['GET'])
 def start_game():
     # start game
-    os.startfile(game_location)
+    #os.startfile(game_location)
+    app1 = Application(backend="win32").start(cmd_line="C:\Poli\Dizertatie\Repo_Github\KartML\Export\ControlledByHuman\MachineLearning_Karts.exe")
+    time.sleep(5)
+    send_keys("{SPACE}")
+    time.sleep(1)
+    send_keys("{SPACE}")
     return jsonify("OK")
 
-# A route to skip the menu
-@app.route('/api/skip-menu', methods=['GET'])
-def skip_menu():
-    hwnd = win32gui.FindWindowEx(0,0,0, "MachineLearning_Karts")
-    win32gui.SetForegroundWindow(hwnd)
+# A route to start the game
+@app.route('/api/end-game', methods=['GET'])
+def end_game():
+    # start game
+    os.system("TASKKILL /F /IM MachineLearning_Karts.exe")
+    return jsonify("OK")
     
-    #time.sleep(5)
-    send_keys("{SPACE}")
-    #time.sleep(5)
-    send_keys("{SPACE}")
-    return jsonify("OK")
-
 app.run()
