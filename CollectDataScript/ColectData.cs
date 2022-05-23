@@ -8,11 +8,15 @@ using System.Text;
 using System;
 using System.Net.Http;
 using System.Linq;
-using Unity.Plastic.Newtonsoft.Json;
+using Newtonsoft.Json;
 using KartGame.KartSystems;
+using UnityEngine.SceneManagement;
 
 public class ColectData : MonoBehaviour
 {
+
+    ObjectiveManager m_ObjectiveManager;
+
     // Model
     public class KartModel
     {
@@ -39,6 +43,7 @@ public class ColectData : MonoBehaviour
         public bool moveLeftInput { get; set; }
         public bool moveRigthInput { get; set; }
         public int state { get; set; }
+        public bool gameOver { get; set; }
     }
     //Global variables
     // sensors - raycast hit
@@ -70,17 +75,20 @@ public class ColectData : MonoBehaviour
     public static float Vertical;
     public static float Horizontal;
     public static int state;
+    public static bool gameOver;
 
     // Start is called before the first frame update
     private void Start()
     {
+        m_ObjectiveManager = FindObjectOfType<ObjectiveManager>();
+        DebugUtility.HandleErrorIfNullFindObject<ObjectiveManager, GameFlowManager>(m_ObjectiveManager, this);
 #if ML
- try
+        try
         {
             using (System.IO.StreamWriter file = new System.IO.StreamWriter(@"C:\Poli\Dizertatie\Repo_Github\KartML\Export_Csv\file" + fileName, true))
             {
                 file.WriteLine("fileId,time,xPos,yPos,zPos,leftSide,leftForward,centralForward,rightForward,rightSide,leftSideDistance,leftForwardDistance," +
-                    "centralForwardDistance,rightForwardDistance,rightSideDistance,zone,movingForward,moveForwardInput,moveBackwardsInput,moveLeftInput,moveRightInput,state");
+                    "centralForwardDistance,rightForwardDistance,rightSideDistance,zone,movingForward,moveForwardInput,moveBackwardsInput,moveLeftInput,moveRightInput,state,gameOver");
             }
         }
         catch (Exception ex)
@@ -138,6 +146,10 @@ public class ColectData : MonoBehaviour
         getState();
         Sensors();
         currZone=Moving();
+        gameOver = false;
+        if (m_ObjectiveManager.AreAllObjectivesCompleted())
+            gameOver = true;
+
         // create the rows you need to append
         StringBuilder sb = new StringBuilder();
         // time passed, x-poz, y-poz, z-poz, left angle sensor, left forward sensor, central forward sensor, rigth forward sensor, right angle sensor, 
@@ -146,12 +158,12 @@ public class ColectData : MonoBehaviour
 
 #if ML
     PostAPI();
-#else
-        sb.AppendFormat("{0},{1},{2},{3},{4},{5},{6},{7},{8},{9},{10},{11},{12},{13},{14},{15},{16},{17},{18},{19},{20},{21}\n", fileId, Time.time.ToString(), x.ToString(),
+
+        sb.AppendFormat("{0},{1},{2},{3},{4},{5},{6},{7},{8},{9},{10},{11},{12},{13},{14},{15},{16},{17},{18},{19},{20},{21},{22}\n", fileId, Time.time.ToString(), x.ToString(),
             y.ToString(), z.ToString(),
             wallDetected[0].ToString(), wallDetected[1].ToString(), wallDetected[2].ToString(), wallDetected[3].ToString(), wallDetected[4].ToString(),
             distanceToWall[0].ToString(), distanceToWall[1].ToString(), distanceToWall[2].ToString(), distanceToWall[3].ToString(), distanceToWall[4].ToString(),
-            currZone, MovingForward, MoveForwardInput.ToString(), MoveBackwardsInput.ToString(), MoveLeftInput.ToString(), MoveRightInput.ToString(), state.ToString(), Environment.NewLine);
+            currZone, MovingForward, MoveForwardInput.ToString(), MoveBackwardsInput.ToString(), MoveLeftInput.ToString(), MoveRightInput.ToString(), state.ToString(),gameOver, Environment.NewLine);
 
         // flush all rows once time.
         File.AppendAllText(@"C:\Poli\Dizertatie\Repo_Github\KartML\Export_Csv\file" + fileName, sb.ToString(), Encoding.UTF8);
@@ -180,7 +192,8 @@ public class ColectData : MonoBehaviour
             + " moveBackwardsInput " + MoveBackwardsInput 
             + " moveLeftInput " + MoveLeftInput 
             + " moveRightInput " + MoveRightInput
-            + " state " + state);
+            + " state " + state
+            + " gameOver" + gameOver);
         */
     }
 
@@ -402,6 +415,7 @@ public class ColectData : MonoBehaviour
 
     public async void PostAPI()
     {
+        
         KartModel kart = new KartModel()
         {
             id = 1,
@@ -426,7 +440,8 @@ public class ColectData : MonoBehaviour
             moveBackwardsInput = false,
             moveLeftInput = false,
             moveRigthInput = false,
-            state = state
+            state = state,
+            gameOver = gameOver
 
         };
         string data = JsonConvert.SerializeObject(kart);

@@ -48,6 +48,7 @@ class kartAgent(object):
     moveLeftInput = True
     moveRightInput = False
     state = 15
+    gameOver = False
 
 kart = [
     {'id':kartAgent.id,
@@ -72,7 +73,8 @@ kart = [
      'moveBackwardsInput':kartAgent.moveBackwardsInput,
      'moveLeftInput':kartAgent.moveLeftInput,
      'moveRigthInput':kartAgent.moveRightInput,
-     'state':kartAgent.state
+     'state':kartAgent.state,
+     'gameOver':kartAgent.gameOver
     }
 ]
 
@@ -93,7 +95,7 @@ data = data[data['zone'].notna()]
 # selectam coloana pe care vrem sa o considera tinta/target. In cazul de fata o sa vrem sa vedem care rezervare sunt anulate
 y = data.state
 
-#selectam features-urile. O sa fie toate coloanele mai putin coloana is_canceled
+#selectam features-urile. O sa fie toate coloanele mai putin coloanele de mai jos 
 x=data
 x.drop('fileId',axis=1,inplace = True)
 x.drop('moveForwardInput', axis=1, inplace=True)
@@ -101,7 +103,7 @@ x.drop('moveBackwardsInput', axis=1, inplace=True)
 x.drop('moveLeftInput', axis=1, inplace=True)
 x.drop('moveRightInput', axis=1, inplace=True)
 x.drop('state',axis=1,inplace=True)
-
+x.drop('gameOver',axis=1,inplace=True)
 
 #impartim setul de datele in set de antrenare si set de testare
 x_train, x_test, y_train, y_test = train_test_split(x.values, y.values, test_size=0.3, random_state=10) # 70% training and 30% tes
@@ -140,11 +142,12 @@ def returnActions(object):
     kartLoc.rightSideDistance = object['rightSideDistance']
     kartLoc.zone = object['zone']
     kartLoc.movingForward = object['movingForward']
+    kartLoc.gameOver = object['gameOver']
 
     newModel = [[kartLoc.time,kartLoc.xPos,kartLoc.yPos,kartLoc.zPos,kartLoc.leftSide,kartLoc.leftForward,kartLoc.centralForward,kartLoc.rightForward,kartLoc.rightSide,kartLoc.leftSideDistance,kartLoc.leftForwardDistance,kartLoc.centralForwardDistance,kartLoc.rightForwardDistance,kartLoc.rightSideDistance,kartLoc.zone,kartLoc.movingForward]]
     prediction = rf_ML.predict(newModel)
     kartLoc.state = str(prediction[0])
-    print(object)
+    #print(object)
     return json.dumps(kartLoc.__dict__)
 
 
@@ -203,6 +206,8 @@ def create_person():
             return 'You need to specify the movingForward', 404
         if 'state' not in body:
             return 'You need to specify the state', 404
+        if 'gameOver' not in body:
+             return 'You need to specify the game status (done/ongoing)', 404
         return returnActions(body)
         #return "ok", 200
 
