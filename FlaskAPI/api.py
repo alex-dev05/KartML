@@ -1,6 +1,7 @@
 from distutils.fancy_getopt import fancy_getopt
 from importlib.resources import path
 from operator import truediv
+from pickle import FALSE
 from types import SimpleNamespace
 from flask import Flask, jsonify, request
 from flask_restful import Resource, Api
@@ -22,7 +23,10 @@ import os
 
 app = Flask(__name__)
 app.config["DEBUG"] = True
+id = "0"
 
+mode = "rf"
+#mode = "supervised"
 
 class kartAgent(object):
     id = 0
@@ -78,11 +82,16 @@ kart = [
     }
 ]
 
+
+
 # game location
 game_location = "C:\Poli\Dizertatie\Repo_Github\KartML\Export\ControlledByHuman\MachineLearning_Karts.exe"
 
-
-
+###################################
+#
+# SUPERVISED ML
+# 
+###################################
 #import merged cvs
 #citim datele din fisier
 data=pd.read_csv(r"C:\Poli\Dizertatie\Repo_Github\KartML\Export_Csv\merged_final.csv")
@@ -150,6 +159,64 @@ def returnActions(object):
     #print(object)
     return json.dumps(kartLoc.__dict__)
 
+###############################################################
+#
+# REINFORCEMENT LEARNING
+#
+###############################################################
+
+# init kart object
+kartRF = kartAgent()
+def init_kartRF():
+    kartRF.id = 0
+    kartRF.time = 0
+    kartRF.xPos = 0
+    kartRF.yPos = 0
+    kartRF.zPos = 0
+    kartRF.leftSide = False
+    kartRF.leftForward = False
+    kartRF.centralForward = False
+    kartRF.rightForward = False
+    kartRF.rightSide = False
+    kartRF.leftSideDistance = False
+    kartRF.leftForwardDistance = 5
+    kartRF.centralForwardDistance = 5
+    kartRF.rightForwardDistance = 5
+    kartRF.rightSideDistance = 5
+    kartRF.zone = 1
+    kartRF.movingForward = False
+    kartRF.gameOver = False
+    kartRF.state = 0
+
+def update_kart_RF(body,source):
+    global kartRF
+    if(source == "unity"):
+        kartRF.id = body["id"]
+        kartRF.time = body["time"]
+        kartRF.xPos = body["xPos"]
+        kartRF.yPos = body["yPos"]
+        kartRF.zPos = body["zPos"]
+        kartRF.leftSide = body["leftSide"]
+        kartRF.leftForward = body["leftForward"]
+        kartRF.centralForward = body["centralForward"]
+        kartRF.rightForward = body["rightForward"]
+        kartRF.rightSide = body["rightSide"]
+        kartRF.leftSideDistance = body["leftSideDistance"]
+        kartRF.leftForwardDistance = body["leftForwardDistance"]
+        kartRF.centralForwardDistance = body["centralForwardDistance"]
+        kartRF.rightForwardDistance = body["rightForwardDistance"]
+        kartRF.rightSideDistance = body["rightSideDistance"]
+        kartRF.zone = body["zone"]
+        kartRF.movingForward = body["movingForward"]
+        kartRF.gameOver = body["gameOver"]
+    elif(source == "rf"):
+        kartRF.state = body["state"]
+    
+###############################################################
+#
+# FLASK API
+# 
+###############################################################
 
 @app.route('/', methods=['GET'])
 def home():
@@ -160,6 +227,12 @@ def home():
 @app.route('/api/kart', methods=['GET'])
 def api_all():
     return jsonify(kart)
+
+########################################################################
+#
+# RANDOM FORREST / DECISSION TREE ENDPOINTS
+#
+########################################################################
 
 # Endpoint to create a new guide
 @app.route('/kart', methods=['POST'])
@@ -208,9 +281,18 @@ def create_person():
             return 'You need to specify the state', 404
         if 'gameOver' not in body:
              return 'You need to specify the game status (done/ongoing)', 404
-        return returnActions(body)
+        if(mode == "rf"):
+            update_kart_RF(body,"unity")
+            return jsonify(kartRF)
+        else:
+            return returnActions(body)
         #return "ok", 200
 
+###################################################################
+#
+# START/END GAME
+#
+###################################################################
 # A route to start the game
 @app.route('/api/start-game', methods=['GET'])
 def start_game():
@@ -229,5 +311,67 @@ def end_game():
     # start game
     os.system("TASKKILL /F /IM MachineLearning_Karts.exe")
     return jsonify("OK")
-    
+
+##############################################################################
+#
+# REINFORCEMENT LEARING ENDPOINTS
+#
+##############################################################################
+
+# A route to return all of the available entries in our catalog.
+@app.route('/api/get-kart-rf', methods=['GET'])
+def get_kart_rf():
+    return json.dumps(kartRF)
+
+# A route to start the game
+@app.route('/api/update-kart-rf', methods=['POST'])
+def update_kart_rf():
+    # POST request
+    body = request.get_json() # get the request body content
+    if body is None:
+        return "The request body is null", 404
+    if 'id' not in body:
+        return 'You need to specify the id',404
+    if 'fileId' not in body:
+        return 'You need to specify the fileId', 404
+    if 'time' not in body:
+        return 'You need to specify the time', 404
+    if 'xPos' not in body:
+        return 'You need to specify the xPos', 404
+    if 'yPos' not in body:
+        return 'You need to specify the yPos', 404
+    if 'zPos' not in body:
+        return 'You need to specify the zPos', 404
+    if 'leftSide' not in body:
+        return 'You need to specify the leftSide', 404
+    if 'leftForward' not in body:
+        return 'You need to specify the leftForward', 404
+    if 'centralForward' not in body:
+        return 'You need to specify the centralForward', 404
+    if 'rightForward' not in body:
+        return 'You need to specify the rightForward', 404
+    if 'rightSide' not in body:
+        return 'You need to specify the rightSide', 404
+    if 'leftSideDistance' not in body:
+        return 'You need to specify the leftSideDistance', 404
+    if 'leftForwardDistance' not in body:
+        return 'You need to specify the leftForwardDistance', 404
+    if 'centralForwardDistance' not in body:
+        return 'You need to specify the centralForwardDistance', 404
+    if 'rightForwardDistance' not in body:
+        return 'You need to specify the rightForwardDistance', 404
+    if 'rightSideDistance' not in body:
+        return 'You need to specify the rightSideDistance', 404
+    if 'zone' not in body:
+        return 'You need to specify the zone', 404
+    if 'movingForward' not in body:
+        return 'You need to specify the movingForward', 404
+    if 'state' not in body:
+        return 'You need to specify the state', 404
+    if 'gameOver' not in body:
+        return 'You need to specify the game status (done/ongoing)', 404
+    update_kart_RF(body,"rf")
+    return jsonify(kartRF)
 app.run()
+
+

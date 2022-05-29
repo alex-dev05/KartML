@@ -619,7 +619,7 @@ public class ColectData : MonoBehaviour
             state = 14;
         }
         //15
-        if (MoveForwardInput == false && MoveBackwardsInput == false && MoveLeftInput == false && MoveRightInput == true)
+        if (MoveForwardInput == false && MoveBackwardsInput == false && MoveLeftInput == false && MoveRightInput == false)
         {
             state = 15;
         }

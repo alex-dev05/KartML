@@ -1,27 +1,153 @@
 import gym
 from gym import spaces
 import numpy as np
+import requests
+import json
 
-# flask
-from distutils.fancy_getopt import fancy_getopt
-from importlib.resources import path
-from operator import truediv
-from types import SimpleNamespace
-from flask import Flask, jsonify, request
-from flask_restful import Resource, Api
 
-# for automatisation
-from pywinauto.application import Application
-from pywinauto.keyboard import send_keys, KeySequenceError
-import time
-import os
 
 app = Flask(__name__)
 app.config["DEBUG"] = True
 
 class KartML(gym.Env):
+
+    
+    class kartAgent(object):    
+        id = 0
+        fileId = 0
+        time = 0.0000
+        xPos = 0.0000
+        yPos = 0.0000
+        zPos = 0.0000
+        leftSide = False
+        leftForward = False
+        centralForward = False
+        rightForward = False
+        rightSide = False
+        leftSideDistance = 5.00
+        leftForwardDistance = 5.00
+        centralForwardDistance = 5.00
+        rightForwardDistance = 5.00
+        rightSideDistance = 5.00
+        zone = 1
+        movingForward = True
+        moveForwardInput = True
+        moveBackwardsInput = False
+        moveLeftInput = True
+        moveRightInput = False
+        state = 15
+        gameOver = False
+
     # Custom Environment that follows the gym inferface
     metadata = {'render.modes': ['human']}
+
+    kartRF = kartAgent()
+##########################################################################
+#
+# UPDATE KART OBJECT
+#
+##########################################################################   
+    def update_kart(body,source):
+        global kartRF
+        if(source == "unity"):
+            kartRF.id = body["id"]
+            kartRF.time = body["time"]
+            kartRF.xPos = body["xPos"]
+            kartRF.yPos = body["yPos"]
+            kartRF.zPos = body["zPos"]
+            kartRF.leftSide = body["leftSide"]
+            kartRF.leftForward = body["leftForward"]
+            kartRF.centralForward = body["centralForward"]
+            kartRF.rightForward = body["rightForward"]
+            kartRF.rightSide = body["rightSide"]
+            kartRF.leftSideDistance = body["leftSideDistance"]
+            kartRF.leftForwardDistance = body["leftForwardDistance"]
+            kartRF.centralForwardDistance = body["centralForwardDistance"]
+            kartRF.rightForwardDistance = body["rightForwardDistance"]
+            kartRF.rightSideDistance = body["rightSideDistance"]
+            kartRF.zone = body["zone"]
+            kartRF.movingForward = body["movingForward"]
+            kartRF.gameOver = body["gameOver"]
+        elif(source == "rf"):
+            kartRF.state = body["state"]
+##########################################################################
+#
+#  REQUESTS TO FLASK API
+#
+##########################################################################
+
+    def get_kart_ml():
+        response = requests.get("http://127.0.0.1:5000/api/get-kart-rf")
+        update_kart(response, "unity")
+
+    def post_req():
+        global kartRF
+        response = requests.post("http://127.0.0.1:5000/api/update-kart-rf",json=jsonify(kartRF))
+        print(response.json())
+
+##########################################################################
+#
+#   START/END GAME
+#
+##########################################################################
+    def start_game():
+        response = requests.get("http://127.0.0.1:5000/api/start-game")
+        print("game started " + response)
+
+    def stop_game():
+         response = requests.get("http://127.0.0.1:5000/api/end-game")
+         print("game stoped " + response)
+##########################################################################
+#
+#  FUNCTIONS
+#
+##########################################################################
+    def _get_reward(self):
+        movingForward = self.observation_space["movingForward"]
+        #if moving -> return 100 else 0
+        reward = 100 if movingForward else 0
+        
+        sensors = self.observation_spaces["sensors"]
+        obstacle = False
+        for sensor in sensors:
+            if sensor < 1:
+                obstacle = True
+
+       #if distance to one wall < 1 -> return -200
+        reward = reward - 200 if obstacle  else 0
+        return reward
+
+    
+        
+
+##########################################################################
+#
+#    INIT KART OBJECT
+#
+##########################################################################
+    def init_kartRF():
+        global kartRF
+        kartRF.id = 0
+        kartRF.time = 0
+        kartRF.xPos = 0
+        kartRF.yPos = 0
+        kartRF.zPos = 0
+        kartRF.leftSide = False
+        kartRF.leftForward = False
+        kartRF.centralForward = False
+        kartRF.rightForward = False
+        kartRF.rightSide = False
+        kartRF.leftSideDistance = False
+        kartRF.leftForwardDistance = 5
+        kartRF.centralForwardDistance = 5
+        kartRF.rightForwardDistance = 5
+        kartRF.rightSideDistance = 5
+        kartRF.zone = 1
+        kartRF.movingForward = False
+        kartRF.gameOver = False
+        kartRF.state = 0
+
+
 
     def __init__(self, df):
         super(KartML, self).__init__()
@@ -30,19 +156,6 @@ class KartML(gym.Env):
         # gym.spaces objects
         action_space = spaces.Discrete(4)
         self.action_space = action_space
-
-        
-        """
-        The following dictionary maps abstract actions from `self.action_space` to 
-        the direction we will walk in if that action is taken.
-        I.e. 0 corresponds to "right", 1 to "up" etc.
-        """
-        self._action_to_direction = {
-            0: np.array([1, 0]),
-            1: np.array([0, 1]),
-            2: np.array([-1, 0]),
-            3: np.array([0, -1]),
-        }
 
 
         # define observation space
@@ -83,19 +196,35 @@ class KartML(gym.Env):
                 "zone":self.zone,
                 "gameOver":self.gameOver
             }
+##########################################################################
+#
+#  STEP
+#
+##########################################################################
+    def getFromUnity(body,self):
+        
+        self.observation_space["time"] = object["time"]
+        self.observation_space["position"] = np.array([object["xPos"],object["yPos"],object["zPos"]])
+        self.observation_space["movingForward"] = np.array([object["leftSide"],object["leftForward"],object["centralForward"],object["rightForward"],object["rightSide"]])
+        self.observation_space["zone"] = object["zone"]
+        self.observation_space["gameOver"] = object["gameOver"]
 
     def step(self, action):
-        # Map the action (element of {0,1,2,3}) to the direction we walk in
-        direction = self._action_to_direction[action]
-       
-        if direction == 0:
+        global kartRF
+        #send command to Unity
+        if action == 0:
             #move forward
-        elif direction == 1:
+            kartRF.state = 7
+        elif action == 1:
             #move backwards
-        elif direction == 2:
+            kartRF.state = 11
+        elif action == 2:
             #move left
-        elif direction == 3
+            kartRF.state = 13
+        elif action == 3:
             #move right
+            kartRF.state = 14
+
         self.current_step += 1
         
         reward =self._get_reward() 
@@ -104,128 +233,26 @@ class KartML(gym.Env):
         obs = self._get_obs()
         return obs, reward, done, {}  
 
+##########################################################################
+#
+#  RESET
+#
+##########################################################################
     def reset(self):
         # reset the state of the environment to the initil state
+        init_kartRF()
         # call the reset endpoint which will close the exe and open again
+        start_game()
+        end_game()
         observation = self._get_obs()
         return self.observation()
 
-
-    def _get_reward(self):
-        
-        movingForward = self.observation_space["movingForward"]
-        #if moving -> return 100 else 0
-        reward = 100 if movingForward else 0
-        
-        sensors = self.observation_spaces["sensors"]
-        obstacle = False
-        for sensor in sensors:
-            if sensor < 1:
-                obstacle = True
-
-       #if distance to one wall < 1 -> return -200
-        reward = reward - 200 if obstacle  else 0
-        return reward
-
-    def getFromUnity():
-        kartLoc = kartAgent()
-        kartLoc.time = object['time']
-        kartLoc.xPos = object['xPos']
-        kartLoc.yPos = object['yPos']
-        kartLoc.zPos = object['zPos']
-        kartLoc.leftSide = object['leftSide']
-        kartLoc.leftForward = object['leftForward']
-        kartLoc.centralForward = object['centralForward']
-        kartLoc.rightForward = object['rightForward']
-        kartLoc.rightSide = object['rightSide']
-        kartLoc.leftSideDistance = object['leftSideDistance']
-        kartLoc.leftForwardDistance = object['leftForwardDistance']
-        kartLoc.centralForwardDistance = object['centralForwardDistance']
-        kartLoc.rightForwardDistance = object['rightForwardDistance']
-        kartLoc.rightSideDistance = object['rightSideDistance']
-        kartLoc.zone = object['zone']
-        kartLoc.movingForward = object['movingForward']
-        kartLoc.gameOver = object['gameOver']
-
-        newModel = [[kartLoc.time,kartLoc.xPos,kartLoc.yPos,kartLoc.zPos,kartLoc.leftSide,kartLoc.leftForward,kartLoc.centralForward,kartLoc.rightForward,kartLoc.rightSide,kartLoc.leftSideDistance,kartLoc.leftForwardDistance,kartLoc.centralForwardDistance,kartLoc.rightForwardDistance,kartLoc.rightSideDistance,kartLoc.zone,kartLoc.movingForward]]
-        kartLoc.state = str(prediction[0])
-        return json.dumps(kartLoc.__dict__)
-    
-
-
-
+##########################################################################
+#
+#  RENDER
+#
+##########################################################################
     def render(self, mode='human', close=False):
         #render the environment as print 
         print(f'Step: {self.current_step}')
 
-
-# Endpoint to create a new guide
-@app.route('/kart', methods=['POST'])
-def create_person():
-    # POST request
-        body = request.get_json() # get the request body content
-        if body is None:
-            return "The request body is null", 404
-        if 'id' not in body:
-            return 'You need to specify the id',404
-        if 'fileId' not in body:
-            return 'You need to specify the fileId', 404
-        if 'time' not in body:
-            return 'You need to specify the time', 404
-        if 'xPos' not in body:
-            return 'You need to specify the xPos', 404
-        if 'yPos' not in body:
-            return 'You need to specify the yPos', 404
-        if 'zPos' not in body:
-            return 'You need to specify the zPos', 404
-        if 'leftSide' not in body:
-            return 'You need to specify the leftSide', 404
-        if 'leftForward' not in body:
-            return 'You need to specify the leftForward', 404
-        if 'centralForward' not in body:
-            return 'You need to specify the centralForward', 404
-        if 'rightForward' not in body:
-            return 'You need to specify the rightForward', 404
-        if 'rightSide' not in body:
-            return 'You need to specify the rightSide', 404
-        if 'leftSideDistance' not in body:
-            return 'You need to specify the leftSideDistance', 404
-        if 'leftForwardDistance' not in body:
-            return 'You need to specify the leftForwardDistance', 404
-        if 'centralForwardDistance' not in body:
-            return 'You need to specify the centralForwardDistance', 404
-        if 'rightForwardDistance' not in body:
-            return 'You need to specify the rightForwardDistance', 404
-        if 'rightSideDistance' not in body:
-            return 'You need to specify the rightSideDistance', 404
-        if 'zone' not in body:
-            return 'You need to specify the zone', 404
-        if 'movingForward' not in body:
-            return 'You need to specify the movingForward', 404
-        if 'state' not in body:
-            return 'You need to specify the state', 404
-        if 'gameOver' not in body:
-             return 'You need to specify the game status (done/ongoing)', 404
-        return getActions(body)
-        #return "ok", 200
-
-# A route to start the game
-@app.route('/api/start-game', methods=['GET'])
-def start_game():
-    # start game
-    #os.startfile(game_location)
-    app1 = Application(backend="win32").start(cmd_line="C:\Poli\Dizertatie\Repo_Github\KartML\Export\ControlledByHuman\MachineLearning_Karts.exe")
-    time.sleep(5)
-    send_keys("{SPACE}")
-    time.sleep(1)
-    send_keys("{SPACE}")
-    return jsonify("OK")
-
-# A route to start the game
-@app.route('/api/end-game', methods=['GET'])
-def end_game():
-    # start game
-    os.system("TASKKILL /F /IM MachineLearning_Karts.exe")
-    return jsonify("OK")
-    
-app.run()
