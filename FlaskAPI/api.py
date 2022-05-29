@@ -25,8 +25,8 @@ app = Flask(__name__)
 app.config["DEBUG"] = True
 id = "0"
 
-mode = "rf"
-#mode = "supervised"
+#mode = "rf"
+mode = "supervised"
 
 class kartAgent(object):
     id = 0
@@ -85,7 +85,7 @@ kart = [
 
 
 # game location
-game_location = "C:\Poli\Dizertatie\Repo_Github\KartML\Export\ControlledByHuman\MachineLearning_Karts.exe"
+game_location = "C:\Poli\Dizertatie\Repo_Github\KartML\Export\ControlledByML\MachineLearning_Karts.exe"
 
 ###################################
 #
@@ -238,6 +238,7 @@ def api_all():
 @app.route('/kart', methods=['POST'])
 def create_person():
     # POST request
+        global kartRF
         body = request.get_json() # get the request body content
         if body is None:
             return "The request body is null", 404
@@ -283,7 +284,7 @@ def create_person():
              return 'You need to specify the game status (done/ongoing)', 404
         if(mode == "rf"):
             update_kart_RF(body,"unity")
-            return jsonify(kartRF)
+            return json.dumps(kartRF.__dict__)
         else:
             return returnActions(body)
         #return "ok", 200
@@ -298,7 +299,7 @@ def create_person():
 def start_game():
     # start game
     #os.startfile(game_location)
-    app1 = Application(backend="win32").start(cmd_line="C:\Poli\Dizertatie\Repo_Github\KartML\Export\ControlledByHuman\MachineLearning_Karts.exe")
+    app1 = Application(backend="win32").start(cmd_line="C:\Poli\Dizertatie\Repo_Github\KartML\Export\ControlledByML\MachineLearning_Karts.exe")
     time.sleep(5)
     send_keys("{SPACE}")
     time.sleep(1)
@@ -321,7 +322,7 @@ def end_game():
 # A route to return all of the available entries in our catalog.
 @app.route('/api/get-kart-rf', methods=['GET'])
 def get_kart_rf():
-    return json.dumps(kartRF)
+    return json.dumps(kartRF.__dict__)
 
 # A route to start the game
 @app.route('/api/update-kart-rf', methods=['POST'])
@@ -371,7 +372,7 @@ def update_kart_rf():
     if 'gameOver' not in body:
         return 'You need to specify the game status (done/ongoing)', 404
     update_kart_RF(body,"rf")
-    return jsonify(kartRF)
+    return json.dumps(kartRF.__dict__)
 app.run()
 
 
