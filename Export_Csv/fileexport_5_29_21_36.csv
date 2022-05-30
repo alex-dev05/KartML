@@ -1,0 +1,2 @@
+fileId,time,xPos,yPos,zPos,leftSide,leftForward,centralForward,rightForward,rightSide,leftSideDistance,leftForwardDistance,centralForwardDistance,rightForwardDistance,rightSideDistance,zone,movingForward,moveForwardInput,moveBackwardsInput,moveLeftInput,moveRightInput,state,gameOver
+5290936,0,15.58,1.010003,4.62,False,False,False,False,False,5,5,5,5,5,1,True,False,False,False,False,15,False
