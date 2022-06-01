@@ -130,27 +130,7 @@ class CustomEnv(gym.Env):
 #  FUNCTIONS
 #
 ##########################################################################
-    def _get_reward(self):
-        movingForward = self.observation_space["movingForward"]
-        #if moving -> return 100 else 0
-        reward = 300 if movingForward else 0
 
-        obstacle = False
-        if kartRF.leftSideDistance < 1:
-            obstacle = True
-        if kartRF.leftForwardDistance < 1:
-            obstacle = True
-        if kartRF.centralForwardDistance < 1:
-            obstacle = True
-        if kartRF.rightForwardDistance < 1:
-            obstacle = True
-        if kartRF.rightSideDistance < 1:
-            obstacle = True 
-
-       #if distance to one wall < 1 -> return -200
-        reward = reward - 200 if obstacle  else 0
-        print("reward ",reward)
-        return reward
 
     def __init__(self):
         super(CustomEnv, self).__init__()
@@ -160,7 +140,7 @@ class CustomEnv(gym.Env):
         # gym.spaces objects
         action_space = spaces.Discrete(4)
         self.action_space = action_space
-
+        self.reward = 0
 
         # define observation space
         # gym.spaces objects
@@ -191,6 +171,62 @@ class CustomEnv(gym.Env):
         )
         self.observation_space = observation_space
 
+    def _get_reward(self):
+        movingForward = kartRF.movingForward
+        #if moving -> return 100 else 0
+        reward =  100 if movingForward else  -2000
+
+        # distance == 5
+        if kartRF.leftSideDistance == 5 :
+            reward = reward + 10
+        if kartRF.leftForwardDistance == 5 :
+            reward = reward + 10
+        if kartRF.centralForwardDistance == 5 :
+            reward = reward + 10
+        if kartRF.rightForwardDistance == 5 :
+            reward = reward + 10
+        if kartRF.rightSideDistance == 5 :
+            reward = reward + 10
+
+        # distance < 5 && distance >= 2.5
+        if kartRF.leftSideDistance < 5 and kartRF.leftSideDistance >= 2.5:
+            reward = reward - 50
+        if kartRF.leftForwardDistance < 5 and kartRF.leftForwardDistance >= 2.5:
+            reward = reward - 50
+        if kartRF.centralForwardDistance < 5 and kartRF.centralForwardDistance >= 2.5:
+            reward = reward - 50
+        if kartRF.rightForwardDistance < 5 and kartRF.rightForwardDistance >= 2.5:
+            reward = reward - 50
+        if kartRF.rightSideDistance < 5 and kartRF.rightSideDistance >= 2.5:
+            reward = reward - 50
+
+        # distance < 2.5 && distance >= 1
+        if kartRF.leftSideDistance < 2.5 and kartRF.leftSideDistance >= 1:
+            reward = reward - 100
+        if kartRF.leftForwardDistance < 2.5 and kartRF.leftForwardDistance >= 1:
+            reward = reward - 1000
+        if kartRF.centralForwardDistance < 2.5 and kartRF.centralForwardDistance >= 1:
+            reward = reward - 1000
+        if kartRF.rightForwardDistance < 2.5 and kartRF.rightForwardDistance >= 1:
+            reward = reward - 1000
+        if kartRF.rightSideDistance < 2.5 and kartRF.rightSideDistance >= 1:
+            reward = reward - 1000
+
+        # distance < 1
+        if kartRF.leftSideDistance < 1:
+            reward = reward - 2500
+        if kartRF.leftForwardDistance < 1:
+            reward = reward - 2500
+        if kartRF.centralForwardDistance < 1:
+            reward = reward - 2500
+        if kartRF.rightForwardDistance < 1:
+            reward = reward - 2500
+        if kartRF.rightSideDistance < 1:
+            reward = reward - 2500
+        
+        print("reward ",reward)
+        return reward
+
     def _get_obs(self):
         global kartRF
         return [kartRF.time,kartRF.xPos,kartRF.yPos,kartRF.zPos,kartRF.movingForward,kartRF.leftForwardDistance,kartRF.leftSideDistance,kartRF.centralForwardDistance,kartRF.rightSideDistance,kartRF.rightForwardDistance,kartRF.zone,kartRF.gameOver]
@@ -208,6 +244,7 @@ class CustomEnv(gym.Env):
         self.observation_space["gameOver"] = object["gameOver"]
 
     def step(self, action):
+        print("action ", action)
         global kartRF
         get_kart_ml()
         #send command to Unity
@@ -219,18 +256,21 @@ class CustomEnv(gym.Env):
             kartRF.state = 11
         elif action == 2:
             #move left
-            kartRF.state = 13
+            kartRF.state = 14
         elif action == 3:
             #move right
-            kartRF.state = 14
+            kartRF.state = 13
 
         post_req()
 
         self.current_step += 1
         
-        reward =self._get_reward() 
-  
-        done = self.observation_space["gameOver"]
+        reward =self._get_reward()
+        done = False 
+        if kartRF.gameOver == True:
+            done = True
+        if kartRF.time > 80.00:
+            done = True
         obs = self._get_obs()
         return obs, reward, done, {}  
 

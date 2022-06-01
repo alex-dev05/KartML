@@ -3,7 +3,7 @@ import gym_examples
 env = gym.make('CustomEnv-v1')
 
 observation = env.reset()
-for _ in range(1000):
+for _ in range(1000000):
     env.render()
     print(observation)
     action = env.action_space.sample()
@@ -12,4 +12,4 @@ for _ in range(1000):
     if done:
         observation = env.reset(  )
         print("Finished after{} timesteps".format(_+1))
-env.close()
+env.close  

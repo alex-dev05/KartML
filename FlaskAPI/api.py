@@ -85,7 +85,7 @@ kart = [
 
 
 # game location
-game_location = "C:\Poli\Dizertatie\Repo_Github\KartML\Export\ControlledByHuman\MachineLearning_Karts.exe"
+game_location = "C:\Poli\Dizertatie\Repo_Github\KartML\Export\ControlledByML\MachineLearning_Karts.exe"
 
 ###################################
 #
@@ -237,7 +237,7 @@ def api_all():
 # Endpoint to create a new guide
 @app.route('/kart', methods=['POST'])
 def create_person():
-    # POST request
+    # POST request 
         global kartRF
         body = request.get_json() # get the request body content
         if body is None:
@@ -299,8 +299,8 @@ def create_person():
 def start_game():
     # start game
     #os.startfile(game_location)
-    app1 = Application(backend="win32").start(cmd_line="C:\Poli\Dizertatie\Repo_Github\KartML\Export\ControlledByHuman\MachineLearning_Karts.exe")
-    time.sleep(5)
+    app1 = Application(backend="win32").start(cmd_line="C:\Poli\Dizertatie\Repo_Github\KartML\Export\ControlledByML\MachineLearning_Karts.exe")
+    time.sleep(12)
     send_keys("{SPACE}")
     time.sleep(1)
     send_keys("{SPACE}")
