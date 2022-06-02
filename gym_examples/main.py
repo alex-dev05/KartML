@@ -1,7 +1,7 @@
 import gym
 import gym_examples
 env = gym.make('CustomEnv-v1')
-
+episodes = 0
 observation = env.reset()
 for _ in range(10000000):
     env.render()
@@ -12,4 +12,5 @@ for _ in range(10000000):
     if done:
         observation = env.reset(  )
         print("Finished after{} timesteps".format(_+1))
+        print("Episode nb{}".format(episodes))
 env.close  

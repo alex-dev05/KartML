@@ -161,7 +161,7 @@ class CustomEnv(gym.Env):
         if kartRF.movingForward == True:
             reward = 100
         else:
-            reward = -2000
+            reward = -5000
 
         # distance == 5
         if kartRF.leftSideDistance == 5 :
