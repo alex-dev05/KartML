@@ -188,29 +188,30 @@ def init_kartRF():
     kartRF.gameOver = False
     kartRF.state = 0
 
-def update_kart_RF(body,source):
+def update_kart_RF(body):
     global kartRF
-    if(source == "unity"):
-        kartRF.id = body["id"]
-        kartRF.time = body["time"]
-        kartRF.xPos = body["xPos"]
-        kartRF.yPos = body["yPos"]
-        kartRF.zPos = body["zPos"]
-        kartRF.leftSide = body["leftSide"]
-        kartRF.leftForward = body["leftForward"]
-        kartRF.centralForward = body["centralForward"]
-        kartRF.rightForward = body["rightForward"]
-        kartRF.rightSide = body["rightSide"]
-        kartRF.leftSideDistance = body["leftSideDistance"]
-        kartRF.leftForwardDistance = body["leftForwardDistance"]
-        kartRF.centralForwardDistance = body["centralForwardDistance"]
-        kartRF.rightForwardDistance = body["rightForwardDistance"]
-        kartRF.rightSideDistance = body["rightSideDistance"]
-        kartRF.zone = body["zone"]
-        kartRF.movingForward = body["movingForward"]
-        kartRF.gameOver = body["gameOver"]
-    elif(source == "rf"):
-        kartRF.state = body["state"]
+    kartRF.state = body["state"]
+
+def update_kart_unity(body):
+    global kartRF
+    kartRF.id = body["id"]
+    kartRF.time = body["time"]
+    kartRF.xPos = body["xPos"]
+    kartRF.yPos = body["yPos"]
+    kartRF.zPos = body["zPos"]
+    kartRF.leftSide = body["leftSide"]
+    kartRF.leftForward = body["leftForward"]
+    kartRF.centralForward = body["centralForward"]
+    kartRF.rightForward = body["rightForward"]
+    kartRF.rightSide = body["rightSide"]
+    kartRF.leftSideDistance = body["leftSideDistance"]
+    kartRF.leftForwardDistance = body["leftForwardDistance"]
+    kartRF.centralForwardDistance = body["centralForwardDistance"]
+    kartRF.rightForwardDistance = body["rightForwardDistance"]
+    kartRF.rightSideDistance = body["rightSideDistance"]
+    kartRF.zone = body["zone"]
+    kartRF.movingForward = body["movingForward"]
+    kartRF.gameOver = body["gameOver"]
     
 ###############################################################
 #
@@ -283,7 +284,7 @@ def create_person():
         if 'gameOver' not in body:
              return 'You need to specify the game status (done/ongoing)', 404
         if(mode == "rf"):
-            update_kart_RF(body,"unity")
+            update_kart_unity(body)
             return json.dumps(kartRF.__dict__)
         else:
             return returnActions(body)
@@ -340,7 +341,7 @@ def update_kart_rf():
         return "The request body is null", 404
     if 'state' not in body:
         return 'You need to specify the state', 404
-    update_kart_RF(body,"rf")
+    update_kart_RF(body)
     return json.dumps(kartRF.__dict__)
 app.run()
 

@@ -3,7 +3,7 @@ import gym_examples
 env = gym.make('CustomEnv-v1')
 
 observation = env.reset()
-for _ in range(1000000):
+for _ in range(10000000):
     env.render()
     print(observation)
     action = env.action_space.sample()

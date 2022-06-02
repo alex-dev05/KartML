@@ -12,11 +12,6 @@ class kartAgent(object):
     xPos = 0.0000
     yPos = 0.0000
     zPos = 0.0000
-    leftSide = False
-    leftForward = False
-    centralForward = False
-    rightForward = False
-    rightSide = False
     leftSideDistance = 5.00
     leftForwardDistance = 5.00
     centralForwardDistance = 5.00
@@ -45,11 +40,6 @@ def update_kart(body,source):
         kartRF.xPos = body["xPos"]
         kartRF.yPos = body["yPos"]
         kartRF.zPos = body["zPos"]
-        kartRF.leftSide = body["leftSide"]
-        kartRF.leftForward = body["leftForward"]
-        kartRF.centralForward = body["centralForward"]
-        kartRF.rightForward = body["rightForward"]
-        kartRF.rightSide = body["rightSide"]
         kartRF.leftSideDistance = body["leftSideDistance"]
         kartRF.leftForwardDistance = body["leftForwardDistance"]
         kartRF.centralForwardDistance = body["centralForwardDistance"]
@@ -105,11 +95,6 @@ def init_kartRF():
     kartRF.xPos = 0
     kartRF.yPos = 0
     kartRF.zPos = 0
-    kartRF.leftSide = False
-    kartRF.leftForward = False
-    kartRF.centralForward = False
-    kartRF.rightForward = False
-    kartRF.rightSide = False
     kartRF.leftSideDistance = 5
     kartRF.leftForwardDistance = 5
     kartRF.centralForwardDistance = 5
@@ -144,7 +129,7 @@ class CustomEnv(gym.Env):
 
         # define observation space
         # gym.spaces objects
-        time = spaces.Box(low=0, high=50.0, shape=(1,),dtype=np.float32) #float (min 0 max 50) -> Box(low=0, high=50.0, dtype=np.float32)
+        time = spaces.Box(low=0, high=80.0, shape=(1,),dtype=np.float32) #float (min 0 max 80) -> Box(low=0, high=50.0, dtype=np.float32)
         #x_pos = 1 #float (min -100 max 100) -> Box(low=-100.0, high=100.0, dtype=np.float32)
         #y_pos = 2 #float (min -100 max 100) -> Box(low=-100.0, high=100.0, dtype=np.float32)
         #z_pos = 3 #float (min -100 max 100) -> Box(low=-100.0, high=100.0, dtype=np.float32)
@@ -158,23 +143,25 @@ class CustomEnv(gym.Env):
         #right_forward_sensor = 3.5 # float (min 0 max 5) -> Box(low=0, high=5.0, dtype=np.float32)
         sensors = spaces.Box(low=np.array([0,0,0,0,0]), high=np.array([5,5,5,5,5]),dtype=np.float32)
         zone = spaces.Discrete(3, start = 1) #int (min 1 max 3) -> Discrete(3, start = 1)
-        gameOver = spaces.Discrete(2)
+        gameOver = spaces.Discrete(1, start = 0)
         observation_space =  spaces.Dict(
             {
-                "time":time,
-                "position":pos,
+                #"time":time,
+                #"position":pos,
                 "movingForward":moving_forward,
                 "sensors":sensors,
-                "zone":zone,
-                "gameOver":gameOver
+                #"zone":zone,
+                #"gameOver":gameOver
             }
         )
         self.observation_space = observation_space
 
     def _get_reward(self):
-        movingForward = kartRF.movingForward
-        #if moving -> return 100 else 0
-        reward =  100 if movingForward else  -2000
+        reward = 0
+        if kartRF.movingForward == True:
+            reward = 100
+        else:
+            reward = -2000
 
         # distance == 5
         if kartRF.leftSideDistance == 5 :
@@ -202,7 +189,7 @@ class CustomEnv(gym.Env):
 
         # distance < 2.5 && distance >= 1
         if kartRF.leftSideDistance < 2.5 and kartRF.leftSideDistance >= 1:
-            reward = reward - 100
+            reward = reward - 1000
         if kartRF.leftForwardDistance < 2.5 and kartRF.leftForwardDistance >= 1:
             reward = reward - 1000
         if kartRF.centralForwardDistance < 2.5 and kartRF.centralForwardDistance >= 1:
@@ -214,15 +201,15 @@ class CustomEnv(gym.Env):
 
         # distance < 1
         if kartRF.leftSideDistance < 1:
-            reward = reward - 2500
+            reward = reward - 5000
         if kartRF.leftForwardDistance < 1:
-            reward = reward - 2500
+            reward = reward - 5000
         if kartRF.centralForwardDistance < 1:
-            reward = reward - 2500
+            reward = reward - 5000
         if kartRF.rightForwardDistance < 1:
-            reward = reward - 2500
+            reward = reward - 5000
         if kartRF.rightSideDistance < 1:
-            reward = reward - 2500
+            reward = reward - 5000
         
         print("reward ",reward)
         return reward
@@ -236,17 +223,26 @@ class CustomEnv(gym.Env):
 #
 ##########################################################################
     def getFromUnity(body,self):
-        
-        self.observation_space["time"] = object["time"]
-        self.observation_space["position"] = np.array([object["xPos"],object["yPos"],object["zPos"]])
-        self.observation_space["movingForward"] = np.array([object["leftSide"],object["leftForward"],object["centralForward"],object["rightForward"],object["rightSide"]])
+        #self.observation_space["time"] = object["time"]
+        #self.observation_space["position"] = np.array([object["xPos"],object["yPos"],object["zPos"]])
+        self.observation_space["sensors"] = np.array([object["leftSideDistance"],object["leftForwardDistance"],object["centralForwardDistance"],object["rightForwardDistance"],object["rightSideDistance"]])
+        movingForward = object["movingForward"]
+        if movingForward == True:
+            self.observation_space["movingForward"] = 1
+        else:
+            self.observation_space["movingForward"] = 0
         self.observation_space["zone"] = object["zone"]
-        self.observation_space["gameOver"] = object["gameOver"]
+        #gameOver = object["gameOver"]
+        #if gameOver == True:
+        #    self.observation_space["gameOver"] = 1
+        #else:
+        #    self.observation_space["gameOver"] = 0
 
     def step(self, action):
         print("action ", action)
         global kartRF
         get_kart_ml()
+        print("Observation:", self.observation_space)
         #send command to Unity
         if action == 0:
             #move forward
