@@ -25,8 +25,8 @@ app = Flask(__name__)
 app.config["DEBUG"] = True
 id = "0"
 
-mode = "rf"
-#mode = "supervised"
+#mode = "rf"
+mode = "supervised"
 
 class kartAgent(object):
     id = 0
@@ -157,6 +157,7 @@ def returnActions(object):
     prediction = rf_ML.predict(newModel)
     kartLoc.state = str(prediction[0])
     #print(object)
+    print("Decision: ",kartLoc.state)
     return json.dumps(kartLoc.__dict__)
 
 ###############################################################
