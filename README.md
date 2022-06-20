@@ -1,8 +1,14 @@
+**KartML**
+
 KartML is a dissertation project that proposes to conduct two experiments aimed at teaching an agent how to learn using machine learning algorithms. 
 The agent takes the form of a kart that is trained in a Nascar-like circuit, its goal being to pass through the three checkpoints.
+
+Track layout:
+
 ![image](https://user-images.githubusercontent.com/37021205/174646885-17b5a966-8408-412d-9ff0-c4380608d2bd.png)
 
 Generic Data Flow
+
 ![image](https://user-images.githubusercontent.com/37021205/174646845-9cc6cdb2-4afd-40af-b0e9-51d713d528d4.png)
 
 
@@ -18,6 +24,7 @@ ML Classification algorithm
 This file was cleaned in python and a classification algorithm was used on it, which returns a value from 0 to 15. This value represents the possible combinations that the kart can have as input: val = 0 -> up arrow = pressed, down arrow = pressed, left arrow = pressed, rigth arrow = pressed val = 1 -> up arrow = pressed, down arrow = pressed, left arrow = pressed, rigth arrow = not pressed .... val = 15 -> up arrow = not pressed, down arrow = not pressed, left arrow = not pressed, rigth arrow = not pressed
 
 Data flow for machine learning supervised algorithm
+
 ![image](https://user-images.githubusercontent.com/37021205/174646976-24528417-3df7-4350-b59c-71e142752b8f.png)
 
 
@@ -33,11 +40,13 @@ Reinforcement Learning
 
 
 Reinforcement Learning Flow
+
 ![image](https://user-images.githubusercontent.com/37021205/174646797-97ff953e-a721-4d10-908d-4ffbe87fba50.png)
 
 
 For the reinforcement learning part we used the OpenAI Gym toolkit. 
 It requires a directory structure as below:
+
 ![image](https://user-images.githubusercontent.com/37021205/174646992-eff65824-097a-4c0a-9bbc-70b6d7307542.png)
 
 For learning, at each frame the agent makes a decision, which is then evaluated by a gain function that penalizes or rewards the agent. This concept is based on a cycle of several consecutive episodes in which the agent learns.
